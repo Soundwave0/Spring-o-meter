@@ -1,0 +1,232 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Drawing.Text;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
+
+namespace Spring_o_meter
+{
+    
+    public partial class Form1 : Form
+    { //initializing values for calibration
+        private double signal_zero_state_calibration = 0;
+        private double signal_test_weight_calibration = 0;
+        private double to_force_map = 0;
+      //initalizing values for reading  
+        private double signal_current_force = 0;
+        private double signal_current_position = 0;
+        private double signal_prev_force = 0;
+        private double signal_prev_position = 0;
+        private double newts_current_force = 0;
+        private double mm_current_position = 0;
+        private double newts_prev_force = 0;
+        private double mm_prev_position = 0;
+        private double spring_k = 0;
+        private double mean_k = 0;
+        //for the graph
+        private const int stack_reading_depth = 5;
+        private Stack<double> stack_k = new Stack<double>();
+        //for the port
+        string port = "COM7";//change into variable port
+        /*
+         * ONN = turn on calibration, led turns on
+         * OFF = turn off calibration, led turns off
+         * CBZ = calibration of Zero
+         * POS = get the position
+         * FRC = get the force
+         * 
+         */
+
+        
+        private void Force_Calibration()
+        {
+            if (calibration_Toggle.Text == "ON")
+            {
+                double sigdif = signal_test_weight_calibration - signal_zero_state_calibration;
+                if (int.TryParse(textBox1.Text, out int testweight))//chekcs if is a double
+                {
+                    double a = sigdif / (testweight);
+                    to_force_map = a * 9.806 / 1000;//now in newtons
+                    enter_Weight_Button.Text = "Calibrated";
+                }
+                else
+                {
+                    to_force_map = -1;
+                    MessageBox.Show("please enter a valid value", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            
+        }
+        private double Signal_To_Force(double Signal)
+        {
+            return Signal *to_force_map;
+        }
+        private double Get_STM(String code)
+        {
+            serialPort1.Write(code+"\n");// signal_zero_state_calibration = read force from stm
+            System.Threading.Thread.Sleep(200);
+            if (double.TryParse(serialPort1.ReadLine(), out double stm_output))//chekcs if is a double
+            {
+                return stm_output;
+            }
+            else
+            {
+
+                MessageBox.Show("serial port error", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return -1;
+            }
+     
+        }
+      
+
+        public Form1()
+        {
+            InitializeComponent();
+            
+            
+            try
+            {
+                serialPort1.PortName = port; //make sure to get the right COM
+                serialPort1.Open();//opening the serial port
+                serialPort1.Write("COM");
+                System.Threading.Thread.Sleep(200);
+                string com_status = serialPort1.ReadLine();
+
+                if (com_status == "OK")
+                {
+                    MessageBox.Show("Serial Connected successfully", "PORT NOTIFICATION", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Correct the COM#", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    this.Close();
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Correct the COM#", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                this.Close();
+            }
+
+
+            
+            
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)//upon loading the form
+        {
+          
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void button1_Click(object sender, EventArgs e)// toggling the 
+        {
+            if(calibration_Toggle.Text=="OFF")
+            {
+                calibration_Toggle.Text = "ON";
+                calibration_Toggle.BackColor = Color.Green;
+                serialPort1.Write("ONN\n");//turns led on stm on
+                
+                
+            }
+            else
+            {
+                calibration_Toggle.Text = "OFF";
+                calibration_Toggle.BackColor = Color.Red;
+                serialPort1.Write("OFF\n");
+            }
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)//complete calibration
+        {
+            if (calibration_Toggle.Text == "ON" )
+            {
+                Force_Calibration();
+      
+            }
+            else
+            {
+                MessageBox.Show("Turn On calibration", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)//calibrating the self_weight;
+        {
+           
+            if (calibration_Toggle.Text == "ON")
+            {
+                button2.Text = "Calibrated";
+                //signal_zero_state_calibration = Get_STM("CBZ");
+            }
+            else
+            {
+                MessageBox.Show("Turn On calibration", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+
+        }
+
+        private void button1_Click_2(object sender, EventArgs e)//sampling button add to chart also
+        {
+            double sum = 0;
+
+            Stack<Double> stack_k_copy = stack_k;
+            for (int i =0; i < stack_reading_depth;i++)
+            {
+                if (stack_k_copy.Count != 0)
+                {
+                    double sample_spring_constant = stack_k_copy.Pop();
+                    sum += sample_spring_constant;
+                    
+                    
+                    //add line to plot the specified point to the chart
+                }
+
+                else
+                {
+                    //plot zero as value and do consider it as part of the sum
+                }
+            }
+            mean_k = sum / stack_reading_depth;//calculates the mean of the different reading values
+
+        }
+
+        private void chart1_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label4_Click_1(object sender, EventArgs e)
+        {
+            
+        }
+    }
+}
