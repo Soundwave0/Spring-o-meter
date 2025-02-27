@@ -57,6 +57,10 @@
             this.button2 = new System.Windows.Forms.Button();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.button3 = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.button4 = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -281,23 +285,68 @@
             this.chart1.ChartAreas.Add(chartArea1);
             legend1.Name = "Legend1";
             this.chart1.Legends.Add(legend1);
-            this.chart1.Location = new System.Drawing.Point(332, 9);
+            this.chart1.Location = new System.Drawing.Point(351, 57);
             this.chart1.Name = "chart1";
             series1.ChartArea = "ChartArea1";
             series1.Legend = "Legend1";
             series1.Name = "Series1";
             this.chart1.Series.Add(series1);
-            this.chart1.Size = new System.Drawing.Size(376, 289);
+            this.chart1.Size = new System.Drawing.Size(303, 241);
             this.chart1.TabIndex = 23;
             this.chart1.Text = "chart1";
             this.chart1.Click += new System.EventHandler(this.chart1_Click);
+            // 
+            // timer1
+            // 
+            this.timer1.Enabled = true;
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(349, 9);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(131, 23);
+            this.button3.TabIndex = 24;
+            this.button3.Text = "COM configuration";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(488, 14);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(35, 13);
+            this.label4.TabIndex = 25;
+            this.label4.Text = "NULL";
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(552, 9);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(75, 23);
+            this.button4.TabIndex = 26;
+            this.button4.Text = "Check COM";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(575, 41);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(0, 13);
+            this.label5.TabIndex = 27;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.ClientSize = new System.Drawing.Size(733, 391);
+            this.ClientSize = new System.Drawing.Size(670, 384);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.button4);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.button3);
             this.Controls.Add(this.chart1);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.label18);
@@ -356,6 +405,10 @@
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Label label5;
     }
 }
 

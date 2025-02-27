@@ -35,7 +35,7 @@ namespace Spring_o_meter
         private const int stack_reading_depth = 5;
         private Stack<double> stack_k = new Stack<double>();
         //for the port
-        string port = "COM7";//change into variable port
+        private string port = "NULL";//change into variable port
         /*
          * ONN = turn on calibration, led turns on
          * OFF = turn off calibration, led turns off
@@ -69,7 +69,7 @@ namespace Spring_o_meter
         {
             return Signal *to_force_map;
         }
-        private double Get_STM(String code)
+        private double Get_STM(String code)//reading output from stm
         {
             serialPort1.Write(code+"\n");// signal_zero_state_calibration = read force from stm
             System.Threading.Thread.Sleep(200);
@@ -85,17 +85,20 @@ namespace Spring_o_meter
             }
      
         }
-      
-
-        public Form1()
+        private void start_COM(String port_method)
         {
-            InitializeComponent();
-            
-            
+            serialPort1.PortName = port_method; //make sure to get the right COM
+            serialPort1.Open();//opening the serial port
+        }
+        private Boolean Check_COM()
+        {
+            if(serialPort1.IsOpen)
+            {
+                serialPort1.Close();
+            }
             try
             {
-                serialPort1.PortName = port; //make sure to get the right COM
-                serialPort1.Open();//opening the serial port
+                start_COM(port);
                 serialPort1.Write("COM");
                 System.Threading.Thread.Sleep(200);
                 string com_status = serialPort1.ReadLine();
@@ -103,23 +106,43 @@ namespace Spring_o_meter
                 if (com_status == "OK")
                 {
                     MessageBox.Show("Serial Connected successfully", "PORT NOTIFICATION", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return true;
                 }
                 else
                 {
                     MessageBox.Show("Correct the COM#", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    this.Close();
+                    //this.Close();
+                    return false;
                 }
             }
             catch
             {
-                MessageBox.Show("Correct the COM#", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                this.Close();
+                MessageBox.Show("Correct the COM# big boy error", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                //this.Close();
+                return false;
             }
 
 
+        }
+        private String COM_dialog()
+        {
+            Form2 port_dialog = new Form2();
             
-            
+            port_dialog.ShowDialog();
+            while (port_dialog.finished == false)
+            {
+                
+            }
+            port = port_dialog.port;
+            return port;
 
+        }
+
+        public Form1()
+        {
+            InitializeComponent();
+            timer1.Start();
+            
         }
 
         private void Form1_Load(object sender, EventArgs e)//upon loading the form
@@ -134,19 +157,26 @@ namespace Spring_o_meter
 
         private void button1_Click(object sender, EventArgs e)// toggling the 
         {
-            if(calibration_Toggle.Text=="OFF")
+            try
             {
-                calibration_Toggle.Text = "ON";
-                calibration_Toggle.BackColor = Color.Green;
-                serialPort1.Write("ONN\n");//turns led on stm on
-                
-                
+                if (calibration_Toggle.Text == "OFF")
+                {
+                    calibration_Toggle.Text = "ON";
+                    calibration_Toggle.BackColor = Color.Green;
+                    serialPort1.Write("ONN\n");//turns led on stm on
+
+
+                }
+                else
+                {
+                    calibration_Toggle.Text = "OFF";
+                    calibration_Toggle.BackColor = Color.Red;
+                    serialPort1.Write("OFF\n");
+                }
             }
-            else
+            catch
             {
-                calibration_Toggle.Text = "OFF";
-                calibration_Toggle.BackColor = Color.Red;
-                serialPort1.Write("OFF\n");
+                MessageBox.Show("PORT is not configured", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -221,12 +251,34 @@ namespace Spring_o_meter
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-
+            label4.Text = port;
+            Console.WriteLine(port);
         }
 
         private void label4_Click_1(object sender, EventArgs e)
         {
             
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            String port_output  = COM_dialog();
+            label4.Text = port_output;
+        }
+
+        private void label19_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if(Check_COM())
+            {
+                button4.BackColor = Color.Green;
+            }
+            else button4.BackColor = Color.Red;
+
         }
     }
 }
