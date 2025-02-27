@@ -29,9 +29,11 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataVisualization.Charting.LineAnnotation lineAnnotation1 = new System.Windows.Forms.DataVisualization.Charting.LineAnnotation();
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title1 = new System.Windows.Forms.DataVisualization.Charting.Title();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.Label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -239,7 +241,7 @@
             // 
             this.label16.AutoSize = true;
             this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label16.Location = new System.Drawing.Point(356, 329);
+            this.label16.Location = new System.Drawing.Point(211, 332);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(124, 25);
             this.label16.TabIndex = 19;
@@ -249,7 +251,7 @@
             // 
             this.label17.AutoSize = true;
             this.label17.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label17.Location = new System.Drawing.Point(486, 329);
+            this.label17.Location = new System.Drawing.Point(331, 332);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(25, 25);
             this.label17.TabIndex = 20;
@@ -281,6 +283,11 @@
             // 
             // chart1
             // 
+            lineAnnotation1.AxisXName = "ChartArea1\\rX";
+            lineAnnotation1.Name = "LineAnnotation1";
+            lineAnnotation1.YAxisName = "ChartArea1\\rY";
+            this.chart1.Annotations.Add(lineAnnotation1);
+            this.chart1.BackColor = System.Drawing.SystemColors.ActiveCaption;
             chartArea1.Name = "ChartArea1";
             this.chart1.ChartAreas.Add(chartArea1);
             legend1.Name = "Legend1";
@@ -288,12 +295,15 @@
             this.chart1.Location = new System.Drawing.Point(351, 57);
             this.chart1.Name = "chart1";
             series1.ChartArea = "ChartArea1";
+            series1.IsValueShownAsLabel = true;
             series1.Legend = "Legend1";
-            series1.Name = "Series1";
+            series1.Name = "K";
             this.chart1.Series.Add(series1);
             this.chart1.Size = new System.Drawing.Size(303, 241);
             this.chart1.TabIndex = 23;
             this.chart1.Text = "chart1";
+            title1.Name = "K";
+            this.chart1.Titles.Add(title1);
             this.chart1.Click += new System.EventHandler(this.chart1_Click);
             // 
             // timer1

@@ -31,18 +31,21 @@ namespace Spring_o_meter
         private double mm_prev_position = 0;
         private double spring_k = 0;
         private double mean_k = 0;
+        private double sum = 0;
         //for the graph
         private const int stack_reading_depth = 5;
         private Stack<double> stack_k = new Stack<double>();
+        private int sample_count = 0;
         //for the port
         private string port = "NULL";//change into variable port
         /*
          * ONN = turn on calibration, led turns on
          * OFF = turn off calibration, led turns off
-         * CBZ = calibration of Zero
+         * XRC = force signal
          * POS = get the position
          * FRC = get the force
-         * 
+         * XOS = position signal
+         
          */
 
         
@@ -137,6 +140,7 @@ namespace Spring_o_meter
             return port;
 
         }
+       
 
         public Form1()
         {
@@ -147,7 +151,8 @@ namespace Spring_o_meter
 
         private void Form1_Load(object sender, EventArgs e)//upon loading the form
         {
-          
+            
+
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -209,7 +214,7 @@ namespace Spring_o_meter
             if (calibration_Toggle.Text == "ON")
             {
                 button2.Text = "Calibrated";
-                //signal_zero_state_calibration = Get_STM("CBZ");
+                //signal_zero_state_calibration = Get_STM("XRC");
             }
             else
             {
@@ -221,26 +226,39 @@ namespace Spring_o_meter
 
         private void button1_Click_2(object sender, EventArgs e)//sampling button add to chart also
         {
-            double sum = 0;
-
+            if(button4.BackColor!=Color.Green) MessageBox.Show("Turn On calibration", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning); ;
+            sample_count++;
+            //calculate the spring constant by pinging the stm with FRC and POS and
+            //subtracting the current and previous measurement and displacements dividng and doing absolute value
+            // this value will 
+            //push current calculated spring constant onto the stack
             Stack<Double> stack_k_copy = stack_k;
+            if (chart1.Series.Count != 0)
+            {
+                chart1.Series.Clear();
+                chart1.Series.Add("K");
+
+            }
+
+            
             for (int i =0; i < stack_reading_depth;i++)
             {
                 if (stack_k_copy.Count != 0)
                 {
                     double sample_spring_constant = stack_k_copy.Pop();
                     sum += sample_spring_constant;
+                    chart1.Series["K"].Points.AddXY("T"+sample_count, sample_spring_constant);
                     
-                    
+
                     //add line to plot the specified point to the chart
                 }
 
                 else
                 {
-                    //plot zero as value and do consider it as part of the sum
+                    chart1.Series["K"].Points.AddXY("TNULL", 0);
                 }
             }
-            mean_k = sum / stack_reading_depth;//calculates the mean of the different reading values
+            mean_k = sum / sample_count;//calculates the mean of the different reading values
 
         }
 
