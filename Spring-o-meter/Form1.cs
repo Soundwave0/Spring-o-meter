@@ -145,7 +145,7 @@ namespace Spring_o_meter
         public Form1()
         {
             InitializeComponent();
-            timer1.Start();
+           
             
         }
 
@@ -267,12 +267,7 @@ namespace Spring_o_meter
             
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            label4.Text = port;
-            Console.WriteLine(port);
-        }
-
+      
         private void label4_Click_1(object sender, EventArgs e)
         {
             
