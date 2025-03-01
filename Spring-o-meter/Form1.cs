@@ -1,4 +1,6 @@
-﻿using System;
+﻿
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -11,6 +13,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+
+
 
 namespace Spring_o_meter
 {
@@ -39,16 +43,21 @@ namespace Spring_o_meter
         //for the port
         private string port = "NULL";//change into variable port
         /*
-         * ONN = turn on calibration, led turns on
-         * OFF = turn off calibration, led turns off
-         * XRC = force signal
-         * POS = get the position
-         * FRC = get the force
-         * XOS = position signal
+         * ONN = turn on calibration, led turns on 1
+         * OFF = turn off calibration, led turns off 0
+         * XRC = force signal 2
+         * POS = get the position 3
+         * FRC = get the force 4
+         * IMP = Impulse counter 5
+         * 
+  
          
          */
 
-        
+        // #TODO add a timer loop to continously read force and position data in increments of 1 second or 
+
+
+
         private void Force_Calibration()
         {
             if (calibration_Toggle.Text == "ON")
@@ -70,12 +79,12 @@ namespace Spring_o_meter
         }
         private double Signal_To_Force(double Signal)
         {
-            return Signal *to_force_map;
+            return Signal*to_force_map;
         }
         private double Get_STM(String code)//reading output from stm
         {
             serialPort1.Write(code+"\n");// signal_zero_state_calibration = read force from stm
-            System.Threading.Thread.Sleep(200);
+            //System.Threading.Thread.Sleep(200);// check if the code is optional most likely not required
             if (double.TryParse(serialPort1.ReadLine(), out double stm_output))//chekcs if is a double
             {
                 return stm_output;
@@ -103,7 +112,7 @@ namespace Spring_o_meter
             {
                 start_COM(port);
                 serialPort1.Write("COM");
-                System.Threading.Thread.Sleep(200);
+                //System.Threading.Thread.Sleep(200);
                 string com_status = serialPort1.ReadLine();
 
                 if (com_status == "OK")
@@ -226,7 +235,7 @@ namespace Spring_o_meter
 
         private void button1_Click_2(object sender, EventArgs e)//sampling button add to chart also
         {
-            if(button4.BackColor!=Color.Green) MessageBox.Show("Turn On calibration", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning); ;
+            if(button4.BackColor!=Color.Green) MessageBox.Show("calibrate", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning); ;
             sample_count++;
             //calculate the spring constant by pinging the stm with FRC and POS and
             //subtracting the current and previous measurement and displacements dividng and doing absolute value
