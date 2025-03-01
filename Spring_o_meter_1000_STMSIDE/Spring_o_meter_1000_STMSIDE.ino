@@ -1,64 +1,121 @@
-/*
-  Blink
+//global variables for postition encoder
+const int pinA = 2;// Connected to CLK on KY­040
+const int pinB = 4; // Connected to DT on KY­040 
 
-  Turns an LED on for one second, then off for one second, repeatedly.
+const double impulses = 30;
+const double distance_per_rotation = 3.2;//change after measurement
+const double gear_ratio = 4;
+int encoderPosCount = 0;
+int pinALast;
+int aVal;
+boolean bCW;
+const double distance_per_impulse = (impulses/360)*(distance_per_rotation)/gear_ratio;
+double plat_pos = 0;
+//global variables for force sensor
 
-  Most Arduinos have an on-board LED you can control. On the UNO, MEGA and ZERO
-  it is attached to digital pin 13, on MKR1000 on pin 6. LED_BUILTIN is set to
-  the correct LED pin independent of which board is used.
-  If you want to know what pin the on-board LED is connected to on your Arduino
-  model, check the Technical Specs of your board at:
-  https://www.arduino.cc/en/Main/Products
+//global varaibles for communication protocol
+String com_data;
+// function for position encoder reading
+void encoder_position_reader();
+void com_functions();
+void setup() 
+{
 
-  modified 8 May 2014
-  by Scott Fitzgerald
-  modified 2 Sep 2016
-  by Arturo Guadalupi
-  modified 8 Sep 2016
-  by Colby Newman
-
-  This example code is in the public domain.
-
-  https://www.arduino.cc/en/Tutorial/BuiltInExamples/Blink
-*/
-
-// the setup function runs once when you press reset or power the board
-String data;
-
-
-void setup() {
-  // initialize digital pin LED_BUILTIN as an output.
-  Serial.begin(9600);
-
-  pinMode(LED_BUILTIN, OUTPUT);
+pinMode (pinA,INPUT);
+pinMode (pinB,INPUT);
+pinMode(LED_BUILTIN, OUTPUT);
+pinALast = digitalRead(pinA);
+Serial.begin (9600);
 }
-
-// the loop function runs over and over again forever
 void loop() 
 {
   
-                      
-                    
-   if(Serial.available())
+  encoder_position_reader();
+  com_functions();
+  
+}
+void com_functions()
+{
+    if(Serial.available())
    {
-    data = Serial.readStringUntil('\n');
-   
+    com_data = Serial.readStringUntil('\n');
     
-    if(data== "ONN")
+    if(com_data=="ONN")
     {
       digitalWrite(LED_BUILTIN,HIGH);
+       
     }
-    else if(data == "OFF")
+    else if(com_data == "OFF")
     {
       digitalWrite(LED_BUILTIN, LOW);
-
     }
-    else if(data == "COM")
+    else if(com_data == "COM")
     {
-    
       Serial.write("OK\n");
     }
+    else if(com_data == "XRC")
+    {
 
+    }
+    else if(com_data == "POS")
+    {
 
-   }                   
+    }
+    else if(com_data == "FRC")
+    {
+      
+    }
+    else if(com_data = "IMP")
+    {
+      Serial.write(encoderPosCount);
+    }
+   
+   }   
 }
+
+
+void encoder_position_reader()
+{
+
+
+  
+  aVal = digitalRead(pinA);
+if (aVal != pinALast )
+{ // Means the knob is rotating
+// if the knob is rotating, we need to determine direction
+// We do that by reading pin B.
+
+
+if (digitalRead(pinB) != aVal)
+  { // Means pin A Changed first ­ We're Rotating Clockwise
+    encoderPosCount ++;
+    bCW = true;
+  } 
+  else 
+  {// Otherwise B changed first and we're moving CCW
+  bCW = false;
+  encoderPosCount--;
+  }
+ // Serial.print ("Rotated: ");
+  if (bCW)
+  {
+  //Serial.println ("clockwise");
+  }
+  else
+  {
+ // Serial.println("counterclockwise");
+  }
+
+  //Serial.print("Encoder Position: ");
+  //Serial.println(encoderPosCount);
+ // Serial.println("Platform Position: ");
+  plat_pos = distance_per_impulse*encoderPosCount;
+ // Serial.println(plat_pos);*/
+ 
+  }
+  pinALast = aVal;
+
+}
+
+
+
