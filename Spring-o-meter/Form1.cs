@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Drawing.Text;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -20,42 +21,62 @@ namespace Spring_o_meter
 {
     
     public partial class Form1 : Form
-    { //initializing values for calibration
+    { 
+        //initializing values for calibration
         private double signal_zero_state_calibration = 0;
         private double signal_test_weight_calibration = 0;
         private double to_force_map = 0;
       //initalizing values for reading  
-        private double signal_current_force = 0;
-        private double signal_current_position = 0;
-        private double signal_prev_force = 0;
-        private double signal_prev_position = 0;
-        private double newts_current_force = 0;
-        private double mm_current_position = 0;
-        private double newts_prev_force = 0;
-        private double mm_prev_position = 0;
+      //idea of using structs for this purpose
+        public struct  data_trial
+        {
+            
+            public data_trial(double pos, double force)
+            {
+                Pos = pos;
+                Force = force;
+            }
+            public double Pos { get; set; }
+            public double Force { get; set; }
+        }
+        data_trial current_data = new data_trial(0, 0);
+        data_trial prev_data = new data_trial(0, 0);
+        Stack<data_trial> data_trial_stack = new Stack<data_trial>();// will store the data in stack format
         private double spring_k = 0;
         private double mean_k = 0;
         private double sum = 0;
+        // for position component
+        private const double GEAR_RATIO = 1;
+        private const double DISTANCE_PER_ROTATION = 360;
+        private  const double IMPULSES_PER_ROTATION = 30;
         //for the graph
-        private const int stack_reading_depth = 5;
+        private const int k_stack_reading_depth = 5;
         private Stack<double> stack_k = new Stack<double>();
+        
         private int sample_count = 0;
         //for the port
-        private string port = "NULL";//change into variable port
+        private string port = "NULL";
         Boolean com_connected = false;
         /* PROTCOL GUIDE
          * ONN = turn on calibration, led turns on 
          * OFF = turn off calibration, led turns off 
          * XRC = get the force signal 
-         * POS = get the position 
-         * FRC = get the force 
+         * POS = get the position // can probably be removed
+         * FRC = get the force // can probably be removed
          * IMP = get the Impulse counter 
+         * COM = tests COMport connections should return OK
+         * RST = resets the position should return SUC
         */
 
-        // #TODO add a timer loop to continously read force and position data in increments of 1 second or 
+        // #TODO get only clicker position from the STM calculate position here where it is much more accurate
 
 
 
+
+        private double Impulse_to_position(double encoder_count)
+        {
+            return (1 / IMPULSES_PER_ROTATION) * (DISTANCE_PER_ROTATION / GEAR_RATIO) * encoder_count;
+        }
         private void Force_Calibration()
         {
             if (calibration_Toggle.Text == "ON")
@@ -64,7 +85,7 @@ namespace Spring_o_meter
                 if (int.TryParse(textBox1.Text, out int testweight))//chekcs if is a double
                 {
                     double a = sigdif / (testweight);
-                    to_force_map = a * 9.806 / 1000;//now in newtons
+                    to_force_map = a * 9.806 / 1000;//now in newtons, gives newtons per volt
                     enter_Weight_Button.Text = "Calibrated";
                 }
                 else
@@ -81,11 +102,18 @@ namespace Spring_o_meter
         }
         private String Get_STM(String code)//reading output from stm // this requires some fixing
         {
-            serialPort1.Write(code+"\n");// signal_zero_state_calibration = read force from stm
-            //System.Threading.Thread.Sleep(10);
-            String stm_output = serialPort1.ReadLine();
-            return stm_output;
-            //System.Threading.Thread.Sleep(200);// check if the code is optional most likely not required
+            if (com_connected)
+            {
+                serialPort1.Write(code + "\n");
+                String stm_output = serialPort1.ReadLine();
+                return stm_output;
+            }
+            else
+            {
+                MessageBox.Show("COM is not activated", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return "ERR";
+            }
+            // below code is for parsing and checking values , create an alternate function for this purpose 
            /* if (double.TryParse(serialPort1.ReadLine(), out double stm_output))//chekcs if is a double
             {
                 return stm_output;
@@ -97,6 +125,18 @@ namespace Spring_o_meter
                 return -1;
             }
             */
+        }
+        
+        private double Get_Position()
+        {
+            String imp = (Get_STM("IMP"));
+            int current_impulse_count = Int32.Parse(imp);
+            double current_position = (Impulse_to_position(current_impulse_count));
+            return current_position;
+        }
+        private double Get_Force()
+        {
+            return 1;// implement once you get the sensor
         }
         private void start_COM(String port_method)
         {
@@ -125,14 +165,12 @@ namespace Spring_o_meter
                 else
                 {
                     MessageBox.Show("Correct the COM#", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    //this.Close();
                     return false;
                 }
             }
             catch
             {
                 MessageBox.Show("Correct the COM# big boy error", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                //this.Close();
                 return false;
             }
 
@@ -151,35 +189,37 @@ namespace Spring_o_meter
             return port;
 
         }
-        private void graph_k()
+        private void Graph_Stack(Chart chartx,int stack_reading_depth, Stack<double> stack, String series_name) //  fix this function
         {
-            Stack<Double> stack_k_copy = stack_k;
+            Stack<Double> stack_copy = stack;
+            
             if (chart1.Series.Count != 0)
             {
                 chart1.Series.Clear();
-                chart1.Series.Add("K");
+                chart1.Series.Add(series_name);
 
             }
 
 
             for (int i = 0; i < stack_reading_depth; i++)
             {
-                if (stack_k_copy.Count != 0)
+                if (stack_copy.Count > 0)
                 {
-                    double sample_spring_constant = stack_k_copy.Pop();
+                    double sample_spring_constant = stack_copy.Pop();
                     sum += sample_spring_constant;
-                    chart1.Series["K"].Points.AddXY("T" + sample_count, sample_spring_constant);
+                    chart1.Series[series_name].Points.AddXY("T" + i, sample_spring_constant);
 
-
-                    //add line to plot the specified point to the chart
                 }
 
                 else
                 {
-                    chart1.Series["K"].Points.AddXY("TNULL", 0);
+                    chart1.Series[series_name].Points.AddXY("TNULL", 0);
                 }
             }
-            mean_k = sum / sample_count;//calculates the mean of the different reading values
+            
+           
+
+            //calculates the mean of the different reading values
         }
        
 
@@ -187,7 +227,7 @@ namespace Spring_o_meter
         {
             InitializeComponent();
             timer1.Start();
-            
+  
         }
 
         private void Form1_Load(object sender, EventArgs e)//upon loading the form
@@ -196,10 +236,6 @@ namespace Spring_o_meter
 
         }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
-            
-        }
 
         private void button1_Click(object sender, EventArgs e)// toggling the 
         {
@@ -239,15 +275,8 @@ namespace Spring_o_meter
             }
         }
 
-        private void label3_Click(object sender, EventArgs e)
-        {
+      
 
-        }
-
-        private void label4_Click(object sender, EventArgs e)
-        {
-
-        }
 
         private void button2_Click(object sender, EventArgs e)//calibrating the self_weight;
         {
@@ -267,28 +296,33 @@ namespace Spring_o_meter
 
         private void button1_Click_2(object sender, EventArgs e)//sampling button add to chart also
         {
-            if(button4.BackColor!=Color.Green) MessageBox.Show("calibrate", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning); ;
+            if (button4.BackColor != Color.Green)
+            {
+                MessageBox.Show("calibrate", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            prev_data = current_data;
             sample_count++;
-            //calculate the spring constant by pinging the stm with FRC and POS and
-            //subtracting the current and previous measurement and displacements dividng and doing absolute value
-            // this value will 
-            //push current calculated spring constant onto the stack
-            //graph_k();// to graph the whole thing
+            current_data = new data_trial(Get_Position(),Get_Force());
+            data_trial_stack.Push(current_data);
+            label12.Text = current_data.Pos.ToString();
+            label13.Text = current_data.Force.ToString();
+            label14.Text = prev_data.Pos.ToString();
+            label15.Text = prev_data.Force.ToString();
+            spring_k = Math.Abs((current_data.Force - prev_data.Force)/(current_data.Pos - prev_data.Pos));
+            label17.Text = spring_k.ToString();
+            stack_k.Push(spring_k);
             
-          
+            Graph_Stack(chart1,k_stack_reading_depth,stack_k,"K");// to graph the whole thing by displaying
+            //last 5 measurements from the stack in the form of a line graph
 
+           
         }
 
-        private void chart1_Click(object sender, EventArgs e)
-        {
-            
-        }
+       
 
       
-        private void label4_Click_1(object sender, EventArgs e)
-        {
-            
-        }
+        
 
         private void button3_Click(object sender, EventArgs e)
         {
@@ -296,10 +330,7 @@ namespace Spring_o_meter
             label4.Text = port_output;
         }
 
-        private void label19_Click(object sender, EventArgs e)
-        {
-            
-        }
+        
 
         private void button4_Click(object sender, EventArgs e)
         {
@@ -311,33 +342,20 @@ namespace Spring_o_meter
 
         }
 
-        private void label19_Click_1(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label21_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label20_Click(object sender, EventArgs e)//position
-        {
-
-        }
-
-        private void label22_Click(object sender, EventArgs e)//force
-        {
-
-        }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
            if (com_connected)
              {
-                String position = Get_STM("POS");
-                label20.Text = position;
-             }
+                
+                label20.Text = Get_Position().ToString();
+                label22.Text = Get_Force().ToString();
+
+                //implement a stack that will continously read position data and plot it against time
+                //implement a force stack that will do the same but with force
+                //implement a spring constant stack that will do the same but with series measurements
+
+            }
 
         }
     }

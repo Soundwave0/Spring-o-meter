@@ -29,11 +29,21 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataVisualization.Charting.LineAnnotation lineAnnotation1 = new System.Windows.Forms.DataVisualization.Charting.LineAnnotation();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title1 = new System.Windows.Forms.DataVisualization.Charting.Title();
             System.Windows.Forms.DataVisualization.Charting.LineAnnotation lineAnnotation2 = new System.Windows.Forms.DataVisualization.Charting.LineAnnotation();
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Title title2 = new System.Windows.Forms.DataVisualization.Charting.Title();
+            System.Windows.Forms.DataVisualization.Charting.LineAnnotation lineAnnotation3 = new System.Windows.Forms.DataVisualization.Charting.LineAnnotation();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title3 = new System.Windows.Forms.DataVisualization.Charting.Title();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.Label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -67,7 +77,11 @@
             this.label21 = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.chart3 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chart2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chart3)).BeginInit();
             this.SuspendLayout();
             // 
             // Label1
@@ -80,7 +94,7 @@
             this.Label1.Size = new System.Drawing.Size(201, 25);
             this.Label1.TabIndex = 0;
             this.Label1.Text = "Spring Calibration";
-            this.Label1.Click += new System.EventHandler(this.label1_Click);
+           
             // 
             // label2
             // 
@@ -98,7 +112,7 @@
             this.calibration_Toggle.BackColor = System.Drawing.Color.Red;
             this.calibration_Toggle.ForeColor = System.Drawing.SystemColors.ControlText;
             this.calibration_Toggle.Location = new System.Drawing.Point(313, 11);
-            this.calibration_Toggle.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.calibration_Toggle.Margin = new System.Windows.Forms.Padding(4);
             this.calibration_Toggle.Name = "calibration_Toggle";
             this.calibration_Toggle.Size = new System.Drawing.Size(100, 28);
             this.calibration_Toggle.TabIndex = 2;
@@ -109,7 +123,7 @@
             // enter_Weight_Button
             // 
             this.enter_Weight_Button.Location = new System.Drawing.Point(117, 155);
-            this.enter_Weight_Button.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.enter_Weight_Button.Margin = new System.Windows.Forms.Padding(4);
             this.enter_Weight_Button.Name = "enter_Weight_Button";
             this.enter_Weight_Button.Size = new System.Drawing.Size(155, 28);
             this.enter_Weight_Button.TabIndex = 3;
@@ -120,7 +134,7 @@
             // textBox1
             // 
             this.textBox1.Location = new System.Drawing.Point(188, 98);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.textBox1.Margin = new System.Windows.Forms.Padding(4);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(193, 22);
             this.textBox1.TabIndex = 4;
@@ -135,7 +149,7 @@
             this.label3.Size = new System.Drawing.Size(98, 16);
             this.label3.TabIndex = 5;
             this.label3.Text = "Test Weight [g]";
-            this.label3.Click += new System.EventHandler(this.label3_Click);
+            
             // 
             // label6
             // 
@@ -173,7 +187,7 @@
             // button1
             // 
             this.button1.Location = new System.Drawing.Point(313, 290);
-            this.button1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.button1.Margin = new System.Windows.Forms.Padding(4);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(100, 28);
             this.button1.TabIndex = 11;
@@ -262,7 +276,7 @@
             // 
             this.label16.AutoSize = true;
             this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label16.Location = new System.Drawing.Point(259, 409);
+            this.label16.Location = new System.Drawing.Point(493, 53);
             this.label16.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(124, 25);
@@ -273,7 +287,7 @@
             // 
             this.label17.AutoSize = true;
             this.label17.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label17.Location = new System.Drawing.Point(391, 408);
+            this.label17.Location = new System.Drawing.Point(615, 53);
             this.label17.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(25, 25);
@@ -298,7 +312,7 @@
             // button2
             // 
             this.button2.Location = new System.Drawing.Point(188, 53);
-            this.button2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.button2.Margin = new System.Windows.Forms.Padding(4);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(195, 28);
             this.button2.TabIndex = 22;
@@ -308,34 +322,34 @@
             // 
             // chart1
             // 
-            lineAnnotation2.AxisXName = "ChartArea1\\rX";
-            lineAnnotation2.Name = "LineAnnotation1";
-            lineAnnotation2.YAxisName = "ChartArea1\\rY";
-            this.chart1.Annotations.Add(lineAnnotation2);
+            lineAnnotation1.AxisXName = "ChartArea1\\rX";
+            lineAnnotation1.Name = "LineAnnotation1";
+            lineAnnotation1.YAxisName = "ChartArea1\\rY";
+            this.chart1.Annotations.Add(lineAnnotation1);
             this.chart1.BackColor = System.Drawing.SystemColors.ActiveCaption;
-            chartArea2.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea2);
-            legend2.Name = "Legend1";
-            this.chart1.Legends.Add(legend2);
-            this.chart1.Location = new System.Drawing.Point(468, 70);
-            this.chart1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            chartArea1.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea1);
+            legend1.Name = "Legend1";
+            this.chart1.Legends.Add(legend1);
+            this.chart1.Location = new System.Drawing.Point(519, 82);
+            this.chart1.Margin = new System.Windows.Forms.Padding(4);
             this.chart1.Name = "chart1";
-            series2.ChartArea = "ChartArea1";
-            series2.IsValueShownAsLabel = true;
-            series2.Legend = "Legend1";
-            series2.Name = "K";
-            this.chart1.Series.Add(series2);
-            this.chart1.Size = new System.Drawing.Size(404, 297);
+            series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series1.IsValueShownAsLabel = true;
+            series1.Legend = "Legend1";
+            series1.Name = "K";
+            this.chart1.Series.Add(series1);
+            this.chart1.Size = new System.Drawing.Size(317, 215);
             this.chart1.TabIndex = 23;
             this.chart1.Text = "chart1";
-            title2.Name = "K";
-            this.chart1.Titles.Add(title2);
-            this.chart1.Click += new System.EventHandler(this.chart1_Click);
+            title1.Name = "K";
+            this.chart1.Titles.Add(title1);
             // 
             // button3
             // 
             this.button3.Location = new System.Drawing.Point(465, 11);
-            this.button3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.button3.Margin = new System.Windows.Forms.Padding(4);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(175, 28);
             this.button3.TabIndex = 24;
@@ -356,7 +370,7 @@
             // button4
             // 
             this.button4.Location = new System.Drawing.Point(736, 11);
-            this.button4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.button4.Margin = new System.Windows.Forms.Padding(4);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(100, 28);
             this.button4.TabIndex = 26;
@@ -382,7 +396,7 @@
             this.label19.Size = new System.Drawing.Size(61, 16);
             this.label19.TabIndex = 28;
             this.label19.Text = "Position: ";
-            this.label19.Click += new System.EventHandler(this.label19_Click_1);
+            
             // 
             // label20
             // 
@@ -394,7 +408,7 @@
             this.label20.Size = new System.Drawing.Size(20, 24);
             this.label20.TabIndex = 29;
             this.label20.Text = "0";
-            this.label20.Click += new System.EventHandler(this.label20_Click);
+            
             // 
             // label21
             // 
@@ -405,7 +419,7 @@
             this.label21.Size = new System.Drawing.Size(48, 16);
             this.label21.TabIndex = 30;
             this.label21.Text = "Force: ";
-            this.label21.Click += new System.EventHandler(this.label21_Click);
+           
             // 
             // label22
             // 
@@ -417,18 +431,72 @@
             this.label22.Size = new System.Drawing.Size(20, 24);
             this.label22.TabIndex = 31;
             this.label22.Text = "0";
-            this.label22.Click += new System.EventHandler(this.label22_Click);
+           
             // 
             // timer1
             // 
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // chart2
+            // 
+            lineAnnotation2.AxisXName = "ChartArea1\\rX";
+            lineAnnotation2.Name = "LineAnnotation1";
+            lineAnnotation2.YAxisName = "ChartArea1\\rY";
+            this.chart2.Annotations.Add(lineAnnotation2);
+            this.chart2.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            chartArea2.Name = "ChartArea1";
+            this.chart2.ChartAreas.Add(chartArea2);
+            legend2.Name = "Legend1";
+            this.chart2.Legends.Add(legend2);
+            this.chart2.Location = new System.Drawing.Point(519, 290);
+            this.chart2.Margin = new System.Windows.Forms.Padding(4);
+            this.chart2.Name = "chart2";
+            series2.ChartArea = "ChartArea1";
+            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series2.IsValueShownAsLabel = true;
+            series2.Legend = "Legend1";
+            series2.Name = "K";
+            this.chart2.Series.Add(series2);
+            this.chart2.Size = new System.Drawing.Size(317, 215);
+            this.chart2.TabIndex = 32;
+            this.chart2.Text = "chart2";
+            title2.Name = "K";
+            this.chart2.Titles.Add(title2);
+            // 
+            // chart3
+            // 
+            lineAnnotation3.AxisXName = "ChartArea1\\rX";
+            lineAnnotation3.Name = "LineAnnotation1";
+            lineAnnotation3.YAxisName = "ChartArea1\\rY";
+            this.chart3.Annotations.Add(lineAnnotation3);
+            this.chart3.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            chartArea3.Name = "ChartArea1";
+            this.chart3.ChartAreas.Add(chartArea3);
+            legend3.Name = "Legend1";
+            this.chart3.Legends.Add(legend3);
+            this.chart3.Location = new System.Drawing.Point(519, 500);
+            this.chart3.Margin = new System.Windows.Forms.Padding(4);
+            this.chart3.Name = "chart3";
+            series3.ChartArea = "ChartArea1";
+            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series3.IsValueShownAsLabel = true;
+            series3.Legend = "Legend1";
+            series3.Name = "K";
+            this.chart3.Series.Add(series3);
+            this.chart3.Size = new System.Drawing.Size(317, 215);
+            this.chart3.TabIndex = 33;
+            this.chart3.Text = "chart3";
+            title3.Name = "K";
+            this.chart3.Titles.Add(title3);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.ClientSize = new System.Drawing.Size(882, 666);
+            this.ClientSize = new System.Drawing.Size(882, 728);
+            this.Controls.Add(this.chart3);
+            this.Controls.Add(this.chart2);
             this.Controls.Add(this.label22);
             this.Controls.Add(this.label21);
             this.Controls.Add(this.label20);
@@ -461,11 +529,13 @@
             this.Controls.Add(this.Label1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
             this.Text = "Spring-O-Meter 1000";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chart2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chart3)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -505,6 +575,8 @@
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Label label22;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart2;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chart3;
     }
 }
 
