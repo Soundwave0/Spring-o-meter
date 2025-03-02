@@ -42,17 +42,15 @@ namespace Spring_o_meter
         private int sample_count = 0;
         //for the port
         private string port = "NULL";//change into variable port
-        /*
-         * ONN = turn on calibration, led turns on 1
-         * OFF = turn off calibration, led turns off 0
-         * XRC = force signal 2
-         * POS = get the position 3
-         * FRC = get the force 4
-         * IMP = Impulse counter 5
-         * 
-  
-         
-         */
+        Boolean com_connected = false;
+        /* PROTCOL GUIDE
+         * ONN = turn on calibration, led turns on 
+         * OFF = turn off calibration, led turns off 
+         * XRC = get the force signal 
+         * POS = get the position 
+         * FRC = get the force 
+         * IMP = get the Impulse counter 
+        */
 
         // #TODO add a timer loop to continously read force and position data in increments of 1 second or 
 
@@ -81,11 +79,14 @@ namespace Spring_o_meter
         {
             return Signal*to_force_map;
         }
-        private double Get_STM(String code)//reading output from stm
+        private String Get_STM(String code)//reading output from stm // this requires some fixing
         {
             serialPort1.Write(code+"\n");// signal_zero_state_calibration = read force from stm
+            //System.Threading.Thread.Sleep(10);
+            String stm_output = serialPort1.ReadLine();
+            return stm_output;
             //System.Threading.Thread.Sleep(200);// check if the code is optional most likely not required
-            if (double.TryParse(serialPort1.ReadLine(), out double stm_output))//chekcs if is a double
+           /* if (double.TryParse(serialPort1.ReadLine(), out double stm_output))//chekcs if is a double
             {
                 return stm_output;
             }
@@ -95,7 +96,7 @@ namespace Spring_o_meter
                 MessageBox.Show("serial port error", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return -1;
             }
-     
+            */
         }
         private void start_COM(String port_method)
         {
@@ -118,6 +119,7 @@ namespace Spring_o_meter
                 if (com_status == "OK")
                 {
                     MessageBox.Show("Serial Connected successfully", "PORT NOTIFICATION", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    com_connected = true;
                     return true;
                 }
                 else
@@ -149,12 +151,42 @@ namespace Spring_o_meter
             return port;
 
         }
+        private void graph_k()
+        {
+            Stack<Double> stack_k_copy = stack_k;
+            if (chart1.Series.Count != 0)
+            {
+                chart1.Series.Clear();
+                chart1.Series.Add("K");
+
+            }
+
+
+            for (int i = 0; i < stack_reading_depth; i++)
+            {
+                if (stack_k_copy.Count != 0)
+                {
+                    double sample_spring_constant = stack_k_copy.Pop();
+                    sum += sample_spring_constant;
+                    chart1.Series["K"].Points.AddXY("T" + sample_count, sample_spring_constant);
+
+
+                    //add line to plot the specified point to the chart
+                }
+
+                else
+                {
+                    chart1.Series["K"].Points.AddXY("TNULL", 0);
+                }
+            }
+            mean_k = sum / sample_count;//calculates the mean of the different reading values
+        }
        
 
         public Form1()
         {
             InitializeComponent();
-           
+            timer1.Start();
             
         }
 
@@ -241,33 +273,9 @@ namespace Spring_o_meter
             //subtracting the current and previous measurement and displacements dividng and doing absolute value
             // this value will 
             //push current calculated spring constant onto the stack
-            Stack<Double> stack_k_copy = stack_k;
-            if (chart1.Series.Count != 0)
-            {
-                chart1.Series.Clear();
-                chart1.Series.Add("K");
-
-            }
-
+            //graph_k();// to graph the whole thing
             
-            for (int i =0; i < stack_reading_depth;i++)
-            {
-                if (stack_k_copy.Count != 0)
-                {
-                    double sample_spring_constant = stack_k_copy.Pop();
-                    sum += sample_spring_constant;
-                    chart1.Series["K"].Points.AddXY("T"+sample_count, sample_spring_constant);
-                    
-
-                    //add line to plot the specified point to the chart
-                }
-
-                else
-                {
-                    chart1.Series["K"].Points.AddXY("TNULL", 0);
-                }
-            }
-            mean_k = sum / sample_count;//calculates the mean of the different reading values
+          
 
         }
 
@@ -300,6 +308,36 @@ namespace Spring_o_meter
                 button4.BackColor = Color.Green;
             }
             else button4.BackColor = Color.Red;
+
+        }
+
+        private void label19_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label21_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label20_Click(object sender, EventArgs e)//position
+        {
+
+        }
+
+        private void label22_Click(object sender, EventArgs e)//force
+        {
+
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+           if (com_connected)
+             {
+                String position = Get_STM("POS");
+                label20.Text = position;
+             }
 
         }
     }
