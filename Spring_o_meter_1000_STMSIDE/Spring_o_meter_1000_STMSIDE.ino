@@ -9,8 +9,8 @@ int encoderPosCount = 0;
 int pinALast;
 int aVal;
 boolean bCW;
-const double distance_per_impulse = (impulses/360)*(distance_per_rotation)/gear_ratio;
-double plat_pos = 0;
+const double distance_per_impulse = (1/impulses)*(distance_per_rotation)/gear_ratio;
+float plat_pos = 0;
 //global variables for force sensor
 
 //global varaibles for communication protocol
@@ -57,9 +57,19 @@ void com_functions()
     {
 
     }
-    else if(com_data == "POS")
+    else if(com_data == "POS") // function to get the position of the platform
     {
 
+      String myString = String(plat_pos);
+      //Serial.println(plat_pos);
+      char* buf = (char*) malloc(sizeof(char)*myString.length()+1);
+      myString.toCharArray(buf, myString.length()+1);
+      Serial.write(buf);
+      Serial.write('\n');
+      free(buf);
+
+
+    
     }
     else if(com_data == "FRC")
     {
@@ -67,7 +77,21 @@ void com_functions()
     }
     else if(com_data = "IMP")
     {
-      Serial.write(encoderPosCount);
+       String myString = String(encoderPosCount);
+      //Serial.println(plat_pos);
+      char* buf = (char*) malloc(sizeof(char)*myString.length()+1);
+      myString.toCharArray(buf, myString.length()+1);
+      Serial.write(buf);
+      Serial.write('\n');
+      free(buf);
+      
+      
+    }
+    else if(com_data = "RST")
+    {
+      encoderPosCount = 0;
+      Serial.write("SUC");
+      Serial.write('\n');
     }
    
    }   
@@ -108,9 +132,9 @@ if (digitalRead(pinB) != aVal)
 
   //Serial.print("Encoder Position: ");
   //Serial.println(encoderPosCount);
- // Serial.println("Platform Position: ");
+  //Serial.println("Platform Position: ");
   plat_pos = distance_per_impulse*encoderPosCount;
- // Serial.println(plat_pos);*/
+  //Serial.println(plat_pos);
  
   }
   pinALast = aVal;
