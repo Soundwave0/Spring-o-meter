@@ -123,18 +123,7 @@ namespace Spring_o_meter
                 MessageBox.Show("COM is not activated", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return "ERR";
             }
-            // below code is for parsing and checking values , create an alternate function for this purpose 
-           /* if (double.TryParse(serialPort1.ReadLine(), out double stm_output))//chekcs if is a double
-            {
-                return stm_output;
-            }
-            else
-            {
-
-                MessageBox.Show("serial port error", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return -1;
-            }
-            */
+            
         }
         
         private double Get_Position()
@@ -142,14 +131,14 @@ namespace Spring_o_meter
             String imp = (Get_STM("IMP"));
             int current_impulse_count = Int32.Parse(imp);
             double current_position = (Impulse_to_position(current_impulse_count));
-            return current_position;
+            return Math.Round(current_position,5);
         }
         private double Get_Force()
         {
            
             String output = Get_STM("WGH"); 
            double cur_sig =  Convert.ToDouble(output);
-            double current_force = Signal_To_Force(cur_sig);
+            double current_force = Math.Round(Signal_To_Force(cur_sig), 5);
             return current_force;
         
             
@@ -208,8 +197,11 @@ namespace Spring_o_meter
         }
         private void Graph_Stack(Chart chartx,int stack_reading_depth, Stack<double> stack, String series_name) //  fix this function
         {
-            Stack<Double> stack_copy = stack;
             
+            Double[] stack_array = stack.ToArray();
+            double max = -1;
+            
+
             if (chart1.Series.Count != 0)
             {
                 chart1.Series.Clear();
@@ -220,17 +212,20 @@ namespace Spring_o_meter
 
             for (int i = 0; i < stack_reading_depth; i++)
             {
-                if (stack_copy.Count > 0)
+                if (i<stack_array.Length)
                 {
-                    double sample_spring_constant = stack_copy.Pop();
+                    double sample_spring_constant = stack_array[i];
                     sum += sample_spring_constant;
-                    chart1.Series[series_name].Points.AddXY("T" + i, sample_spring_constant);
-
+                    if (max < sample_spring_constant) max = sample_spring_constant;
+                    mean_k = sum / sample_count - 1;
+                    chart1.Series[series_name].Points.AddXY(i, sample_spring_constant);
+                    chart1.ChartAreas[0].AxisY.Maximum = max + 0.1 * max;
+                    chart1.ChartAreas[0].AxisY.Minimum = 0;
                 }
 
                 else
                 {
-                    chart1.Series[series_name].Points.AddXY("TNULL", 0);
+                    chart1.Series[series_name].Points.AddXY(i, 0);
                 }
             }
             
@@ -301,10 +296,11 @@ namespace Spring_o_meter
                 calibrated = true;
       
             }
-            else
+            else if(calibration_Toggle.Text == "OFF")
             {
                 MessageBox.Show("Turn On calibration", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+            
         }
 
       
@@ -313,7 +309,7 @@ namespace Spring_o_meter
         private void button2_Click(object sender, EventArgs e)//calibrating the self_weight;
         {
            
-            if (calibration_Toggle.Text == "ON")
+            if (calibration_Toggle.Text == "ON" && !calibrated)
             {
                 
                 
@@ -325,6 +321,10 @@ namespace Spring_o_meter
                 label23.Text = "LOAD TEST";
                 label23.BackColor = Color.Green;
                
+            }
+            else if(calibrated)
+            {
+                MessageBox.Show("Restart to calibrate", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             else
             {
@@ -349,11 +349,28 @@ namespace Spring_o_meter
             label13.Text = current_data.Force.ToString();
             label14.Text = prev_data.Pos.ToString();
             label15.Text = prev_data.Force.ToString();
-            spring_k = Math.Abs((current_data.Force - prev_data.Force)/(current_data.Pos - prev_data.Pos));
-            label17.Text = spring_k.ToString();
-            stack_k.Push(spring_k);
-            
-            Graph_Stack(chart1,k_stack_reading_depth,stack_k,"K");// to graph the whole thing by displaying
+            if(prev_data.Pos == current_data.Pos)
+            {
+                MessageBox.Show("change position to attain measurement", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            if (sample_count >= 2)
+            {
+                spring_k = Math.Round(Math.Abs((current_data.Force - prev_data.Force) / (current_data.Pos - prev_data.Pos)), 3);
+                label17.Text = spring_k.ToString();
+                stack_k.Push(spring_k);
+                try
+                {
+                    Graph_Stack(chart1, k_stack_reading_depth, stack_k, "K");// to graph the whole thing by displaying
+                }
+                catch
+                {
+                    stack_k.Pop();
+                    stack_k.Push(0);
+                    MessageBox.Show("Graph error", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+           
             //last 5 measurements from the stack in the form of a line graph
 
            
@@ -389,8 +406,8 @@ namespace Spring_o_meter
            if (com_connected&&calibrated)
              {
                 
-                label20.Text = Get_Position().ToString();
-                label22.Text = Get_Force().ToString();
+                label20.Text = Math.Round(Get_Position(),5).ToString()+" mm";
+                label22.Text = Math.Round(Get_Force(), 5).ToString()+" N";
 
                 //implement a stack that will continously read position data and plot it against time
                 //implement a force stack that will do the same but with force
@@ -406,6 +423,18 @@ namespace Spring_o_meter
             if(serialPort1.ReadLine()=="SUC")
             {
                
+            }
+            else
+            {
+                MessageBox.Show("STMERROR", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            if(Get_STM("RST")=="SUC")
+            {
+
             }
             else
             {
