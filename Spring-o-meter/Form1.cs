@@ -26,6 +26,8 @@ namespace Spring_o_meter
         private double signal_zero_state_calibration = 0;
         private double signal_test_weight_calibration = 0;
         private double to_force_map = 0;
+        Boolean calibrated = false;
+        private double force;
       //initalizing values for reading  
       //idea of using structs for this purpose
         public struct  data_trial
@@ -46,8 +48,8 @@ namespace Spring_o_meter
         private double mean_k = 0;
         private double sum = 0;
         // for position component
-        private const double GEAR_RATIO = 1;
-        private const double DISTANCE_PER_ROTATION = 360;
+        private const double GEAR_RATIO = 3;
+        private const double DISTANCE_PER_ROTATION = 2;
         private  const double IMPULSES_PER_ROTATION = 30;
         //for the graph
         private const int k_stack_reading_depth = 5;
@@ -57,15 +59,20 @@ namespace Spring_o_meter
         //for the port
         private string port = "NULL";
         Boolean com_connected = false;
-        /* PROTCOL GUIDE
+        /* PROTCOL GUIDE STM(System Transfer Mechanism)
          * ONN = turn on calibration, led turns on 
          * OFF = turn off calibration, led turns off 
-         * XRC = get the force signal 
-         * POS = get the position // can probably be removed
-         * FRC = get the force // can probably be removed
+         * WGH = get the force signal 
+         * POS = get the position 
          * IMP = get the Impulse counter 
          * COM = tests COMport connections should return OK
          * RST = resets the position should return SUC
+         * TRE = tares the scale should return SUC
+         * CAL = should calibrate the weight
+         * TREF = tares fast during measurement
+         * ERR = value received when request is an error
+         * CALVAL = change the calibration value in the program
+         * 
         */
 
         // #TODO get only clicker position from the STM calculate position here where it is much more accurate
@@ -79,13 +86,16 @@ namespace Spring_o_meter
         }
         private void Force_Calibration()
         {
-            if (calibration_Toggle.Text == "ON")
+            if (calibration_Toggle.Text == "ON" && com_connected)
             {
+
+                serialPort1.WriteLine("WGH");
+                signal_test_weight_calibration = Convert.ToDouble(serialPort1.ReadLine());
                 double sigdif = signal_test_weight_calibration - signal_zero_state_calibration;
-                if (int.TryParse(textBox1.Text, out int testweight))//chekcs if is a double
+                if (double.TryParse(textBox1.Text, out double testweight))//chekcs if is a double
                 {
-                    double a = sigdif / (testweight);
-                    to_force_map = a * 9.806 / 1000;//now in newtons, gives newtons per volt
+                    double a = testweight / (sigdif);
+                    to_force_map = a * 9.806 / 1000;//now in newtons, gives newtons per sig unit
                     enter_Weight_Button.Text = "Calibrated";
                 }
                 else
@@ -104,8 +114,8 @@ namespace Spring_o_meter
         {
             if (com_connected)
             {
-                serialPort1.Write(code + "\n");
-                String stm_output = serialPort1.ReadLine();
+                serialPort1.WriteLine(code);
+                2String stm_output = serialPort1.ReadLine();
                 return stm_output;
             }
             else
@@ -136,7 +146,14 @@ namespace Spring_o_meter
         }
         private double Get_Force()
         {
-            return 1;// implement once you get the sensor
+           
+            String output = Get_STM("WGH"); 
+           double cur_sig =  Convert.ToDouble(output);
+            double current_force = Signal_To_Force(cur_sig);
+            return current_force;
+        
+            
+
         }
         private void start_COM(String port_method)
         {
@@ -239,6 +256,7 @@ namespace Spring_o_meter
 
         private void button1_Click(object sender, EventArgs e)// toggling the 
         {
+            
             try
             {
                 if (calibration_Toggle.Text == "OFF")
@@ -246,11 +264,24 @@ namespace Spring_o_meter
                     calibration_Toggle.Text = "ON";
                     calibration_Toggle.BackColor = Color.Green;
                     serialPort1.Write("ONN\n");//turns led on stm on
+                    serialPort1.WriteLine("TRE");
+                    if (serialPort1.ReadLine() == "SUC")
+                    {
+
+                    }
+                    else
+                    {
+                        MessageBox.Show("STMERROR", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+
+
+
 
 
                 }
                 else
                 {
+                    serialPort1.WriteLine("TRE");
                     calibration_Toggle.Text = "OFF";
                     calibration_Toggle.BackColor = Color.Red;
                     serialPort1.Write("OFF\n");
@@ -267,6 +298,7 @@ namespace Spring_o_meter
             if (calibration_Toggle.Text == "ON" )
             {
                 Force_Calibration();
+                calibrated = true;
       
             }
             else
@@ -283,8 +315,16 @@ namespace Spring_o_meter
            
             if (calibration_Toggle.Text == "ON")
             {
+                
+                
+                serialPort1.WriteLine("CAL");//calibrates based on constant provided
+                
+                String output = Get_STM("WGH");
+                signal_zero_state_calibration =  Convert.ToDouble(serialPort1.ReadLine());
                 button2.Text = "Calibrated";
-                //signal_zero_state_calibration = Get_STM("XRC");
+                label23.Text = "LOAD TEST";
+                label23.BackColor = Color.Green;
+               
             }
             else
             {
@@ -337,6 +377,7 @@ namespace Spring_o_meter
             if(Check_COM())
             {
                 button4.BackColor = Color.Green;
+                
             }
             else button4.BackColor = Color.Red;
 
@@ -345,7 +386,7 @@ namespace Spring_o_meter
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-           if (com_connected)
+           if (com_connected&&calibrated)
              {
                 
                 label20.Text = Get_Position().ToString();
@@ -357,6 +398,19 @@ namespace Spring_o_meter
 
             }
 
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            serialPort1.WriteLine("TRE");
+            if(serialPort1.ReadLine()=="SUC")
+            {
+               
+            }
+            else
+            {
+                MessageBox.Show("STMERROR", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
     }
 }

@@ -79,6 +79,8 @@
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.chart3 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.label23 = new System.Windows.Forms.Label();
+            this.button5 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart3)).BeginInit();
@@ -94,7 +96,6 @@
             this.Label1.Size = new System.Drawing.Size(201, 25);
             this.Label1.TabIndex = 0;
             this.Label1.Text = "Spring Calibration";
-           
             // 
             // label2
             // 
@@ -149,7 +150,6 @@
             this.label3.Size = new System.Drawing.Size(98, 16);
             this.label3.TabIndex = 5;
             this.label3.Text = "Test Weight [g]";
-            
             // 
             // label6
             // 
@@ -316,7 +316,7 @@
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(195, 28);
             this.button2.TabIndex = 22;
-            this.button2.Text = "Calibrate Self Weight";
+            this.button2.Text = "Calibrate Zero";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -396,7 +396,6 @@
             this.label19.Size = new System.Drawing.Size(61, 16);
             this.label19.TabIndex = 28;
             this.label19.Text = "Position: ";
-            
             // 
             // label20
             // 
@@ -408,7 +407,6 @@
             this.label20.Size = new System.Drawing.Size(20, 24);
             this.label20.TabIndex = 29;
             this.label20.Text = "0";
-            
             // 
             // label21
             // 
@@ -419,7 +417,6 @@
             this.label21.Size = new System.Drawing.Size(48, 16);
             this.label21.TabIndex = 30;
             this.label21.Text = "Force: ";
-           
             // 
             // label22
             // 
@@ -431,7 +428,6 @@
             this.label22.Size = new System.Drawing.Size(20, 24);
             this.label22.TabIndex = 31;
             this.label22.Text = "0";
-           
             // 
             // timer1
             // 
@@ -489,12 +485,34 @@
             title3.Name = "K";
             this.chart3.Titles.Add(title3);
             // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.BackColor = System.Drawing.Color.Red;
+            this.label23.Location = new System.Drawing.Point(187, 135);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(91, 16);
+            this.label23.TabIndex = 34;
+            this.label23.Text = "Do NOT Load";
+            // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(313, 158);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(75, 23);
+            this.button5.TabIndex = 35;
+            this.button5.Text = "Tare";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.ClientSize = new System.Drawing.Size(882, 728);
+            this.Controls.Add(this.button5);
+            this.Controls.Add(this.label23);
             this.Controls.Add(this.chart3);
             this.Controls.Add(this.chart2);
             this.Controls.Add(this.label22);
@@ -577,6 +595,8 @@
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart2;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart3;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.Button button5;
     }
 }
 
