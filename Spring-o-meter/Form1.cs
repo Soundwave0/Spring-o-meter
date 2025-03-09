@@ -115,7 +115,7 @@ namespace Spring_o_meter
             if (com_connected)
             {
                 serialPort1.WriteLine(code);
-                2String stm_output = serialPort1.ReadLine();
+                String stm_output = serialPort1.ReadLine();
                 return stm_output;
             }
             else
