@@ -1,7 +1,5 @@
 #include<HX711_ADC.h>
-#if defined(ESP8266)|| defined(ESP32)|| defined(AVR)
-#include <EEPROM.h>
-#endif
+
 
 //global variables for postition encoder
 const int pinA = 5;// Connected to CLK on KY­040 D1
@@ -22,9 +20,8 @@ float plat_pos = 0;
 //global variables for force sensor
 HX711_ADC LoadCell(pinDT,pinSCK);
 boolean _tare = true;
-const int calVal_calVal_eepromAdress =0;
 unsigned long t =0;
-float calibrationValue =1/200;//adding a default value 1/200 
+float calibrationValue =100;
 unsigned long stabilizingtime = 3000;//increasing the accuracy of the tare operation by increasing the value
 float weight_value = 0;
 const int samples = 10;//sampling during filtering and averaging for returning the signal
@@ -44,7 +41,7 @@ Serial.begin (9600);
 delay(10);
 LoadCell.begin();
 LoadCell.start(stabilizingtime, _tare);
-LoadCell.setSamplesInUse(int samples)
+LoadCell.setSamplesInUse(samples);
 //LoadCell.setReverseOutput(); //uncomment to turn a negative output value to positive
 
 }
@@ -105,6 +102,7 @@ void com_functions()
     }
     else if(com_data == "RST")//resets the position on the encoder to 0
     {
+      plat_pos = 0;
       encoderPosCount = 0;
       Serial.write("SUC");
       Serial.write('\n');
