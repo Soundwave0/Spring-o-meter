@@ -327,7 +327,7 @@ namespace Spring_o_meter
       
 
 
-        private void button2_Click(object sender, EventArgs e)//calibrating the self_weight;
+        private void button2_Click(object sender, EventArgs e)//calibrating the self_weight;//pokelpokel
         {
            
             if (calibration_Toggle.Text == "ON" && !calibrated)
