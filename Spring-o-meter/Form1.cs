@@ -27,7 +27,8 @@ namespace Spring_o_meter
         private double signal_test_weight_calibration = 0;
         private double to_force_map = 0;
         Boolean calibrated = false;
-        private double force;
+       
+
       //initalizing values for reading  
       //idea of using structs for this purpose
         public struct  data_trial
@@ -59,6 +60,11 @@ namespace Spring_o_meter
         //for the port
         private string port = "NULL";
         Boolean com_connected = false;
+        private Boolean kickpoint = false;
+        private Boolean kickpoint_found = false;
+        private double kickpoint_value = 0.15;
+
+
         /* PROTCOL GUIDE STM(System Transfer Mechanism)
          * ONN = turn on calibration, led turns on 
          * OFF = turn off calibration, led turns off 
@@ -414,9 +420,19 @@ namespace Spring_o_meter
         {
            if (com_connected&&calibrated)
              {
-                
-                label20.Text = Math.Round(Get_Position(),5).ToString()+" mm";
-                label22.Text = Math.Round(Get_Force(), 5).ToString()+" N";
+                double force = Get_Force();
+                double position = Get_Position();
+                label20.Text = Math.Round(position,5).ToString()+" mm";
+                label22.Text = Math.Round(force, 5).ToString()+" N";
+                if(!kickpoint_found && kickpoint)
+                {
+                    if(force >=kickpoint_value)
+                    {
+                        kickpoint_found = true;
+                        label30.Text = Math.Round(position, 5).ToString() + " mm";
+                    }
+
+                }
 
             }
 
@@ -466,6 +482,22 @@ namespace Spring_o_meter
         private void label24_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            if(button8.Text == "OFF")
+            {
+                button8.Text = "ON";
+                button8.BackColor = Color.Green;
+                kickpoint = true;
+            }
+            else
+            {
+                button8.Text = "OFF";
+                button8.BackColor = Color.Red;
+                kickpoint = false;
+            }
         }
     }
 }
