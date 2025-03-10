@@ -48,12 +48,12 @@ namespace Spring_o_meter
         private double mean_k = 0;
         private double sum = 0;
         // for position component
-        private const double GEAR_RATIO = 3;
-        private const double DISTANCE_PER_ROTATION = 2;
-        private  const double IMPULSES_PER_ROTATION = 30;
+        private const double GEAR_RATIO = 3;//netweem driver and gear
+        private const double DISTANCE_PER_ROTATION = 2; // distance in mm in distance per rotation
+        private  const double IMPULSES_PER_ROTATION = 30;// impulses in the encoder
         //for the graph
-        private const int k_stack_reading_depth = 5;
-        private Stack<double> stack_k = new Stack<double>();
+        private const int k_stack_reading_depth = 5;// stack reading depth for graphing trials
+        private Stack<double> stack_k = new Stack<double>(); // stack that stores the spring constants
         
         private int sample_count = 0;
         //for the port
@@ -71,13 +71,9 @@ namespace Spring_o_meter
          * CAL = should calibrate the weight
          * TREF = tares fast during measurement
          * ERR = value received when request is an error
-         * CALVAL = change the calibration value in the program
+         * CALVAL = change the calibration value in the esp program
          * 
         */
-
-        // #TODO get only clicker position from the STM calculate position here where it is much more accurate
-
-
 
 
         private double Impulse_to_position(double encoder_count)
@@ -106,11 +102,36 @@ namespace Spring_o_meter
             }
             
         }
+        void Graph_K(Chart chartx, String series_name,Stack<data_trial> stack)
+        {
+            
+            data_trial[] data_trial_array = stack.ToArray();
+            SortedDictionary<double,double> keyValuePairs = new SortedDictionary<double,double>();
+            /*if (chartx.Series.Count != 0)
+            {
+                chartx.Series.Clear();
+                chartx.Series.Add(series_name);
+
+            }*/
+
+            for (int i =0; i < data_trial_array.Length;i++)
+            {
+                double key = Math.Round(Math.Abs(data_trial_array[i].Pos),2);
+                double value = Math.Round(Math.Abs(data_trial_array[i].Force),2);
+                keyValuePairs.Add(key, value);
+
+            }
+            foreach(var j in  keyValuePairs)
+            {
+                chartx.Series[series_name].Points.AddXY(j.Key, j.Value);
+            }
+            
+        }
         private double Signal_To_Force(double Signal)
         {
             return Signal*to_force_map;
         }
-        private String Get_STM(String code)//reading output from stm // this requires some fixing
+        private String Get_STM(String code)
         {
             if (com_connected)
             {
@@ -140,9 +161,6 @@ namespace Spring_o_meter
            double cur_sig =  Convert.ToDouble(output);
             double current_force = Math.Round(Signal_To_Force(cur_sig), 5);
             return current_force;
-        
-            
-
         }
         private void start_COM(String port_method)
         {
@@ -185,7 +203,6 @@ namespace Spring_o_meter
         private String COM_dialog()
         {
             Form2 port_dialog = new Form2();
-            
             port_dialog.ShowDialog();
             while (port_dialog.finished == false)
             {
@@ -193,15 +210,12 @@ namespace Spring_o_meter
             }
             port = port_dialog.port;
             return port;
-
         }
         private void Graph_Stack(Chart chartx,int stack_reading_depth, Stack<double> stack, String series_name) //  fix this function
         {
             
             Double[] stack_array = stack.ToArray();
             double max = -1;
-            
-
             if (chart1.Series.Count != 0)
             {
                 chart1.Series.Clear();
@@ -209,15 +223,14 @@ namespace Spring_o_meter
 
             }
 
-
             for (int i = 0; i < stack_reading_depth; i++)
             {
                 if (i<stack_array.Length)
                 {
                     double sample_spring_constant = stack_array[i];
-                    sum += sample_spring_constant;
+                    
                     if (max < sample_spring_constant) max = sample_spring_constant;
-                    mean_k = sum / sample_count - 1;
+                    
                     chart1.Series[series_name].Points.AddXY(i, sample_spring_constant);
                     chart1.ChartAreas[0].AxisY.Maximum = max + 0.1 * max;
                     chart1.ChartAreas[0].AxisY.Minimum = 0;
@@ -228,27 +241,33 @@ namespace Spring_o_meter
                     chart1.Series[series_name].Points.AddXY(i, 0);
                 }
             }
-            
            
-
-            //calculates the mean of the different reading values
         }
-       
+        static double standardDeviation(IEnumerable<double> sequence)
+        {
+            double result = 0;
+
+            if (sequence.Any())
+            {
+                double average = sequence.Average();
+                double sum = sequence.Sum(d => Math.Pow(d - average, 2));
+                result = Math.Sqrt((sum) / sequence.Count());
+            }
+            return result;
+        }
+
+
 
         public Form1()
         {
             InitializeComponent();
             timer1.Start();
-  
         }
 
         private void Form1_Load(object sender, EventArgs e)//upon loading the form
         {
             
-
         }
-
-
         private void button1_Click(object sender, EventArgs e)// toggling the 
         {
             
@@ -268,10 +287,6 @@ namespace Spring_o_meter
                     {
                         MessageBox.Show("STMERROR", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
-
-
-
-
 
                 }
                 else
@@ -311,10 +326,7 @@ namespace Spring_o_meter
            
             if (calibration_Toggle.Text == "ON" && !calibrated)
             {
-                
-                
-                serialPort1.WriteLine("CAL");//calibrates based on constant provided
-                
+                serialPort1.WriteLine("CAL");   
                 String output = Get_STM("WGH");
                 signal_zero_state_calibration =  Convert.ToDouble(serialPort1.ReadLine());
                 button2.Text = "Calibrated";
@@ -343,13 +355,14 @@ namespace Spring_o_meter
             }
             prev_data = current_data;
             sample_count++;
-            current_data = new data_trial(Get_Position(),Get_Force());
+            
+            current_data = new data_trial(Get_Position(), Get_Force());
             data_trial_stack.Push(current_data);
             label12.Text = current_data.Pos.ToString();
             label13.Text = current_data.Force.ToString();
             label14.Text = prev_data.Pos.ToString();
             label15.Text = prev_data.Force.ToString();
-            if(prev_data.Pos == current_data.Pos)
+            if (prev_data.Pos == current_data.Pos)
             {
                 MessageBox.Show("change position to attain measurement", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -357,6 +370,8 @@ namespace Spring_o_meter
             if (sample_count >= 2)
             {
                 spring_k = Math.Round(Math.Abs((current_data.Force - prev_data.Force) / (current_data.Pos - prev_data.Pos)), 3);
+                sum += spring_k;
+                mean_k = sum / sample_count-2;
                 label17.Text = spring_k.ToString();
                 stack_k.Push(spring_k);
                 try
@@ -370,17 +385,11 @@ namespace Spring_o_meter
                     MessageBox.Show("Graph error", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
-           
+
             //last 5 measurements from the stack in the form of a line graph
 
-           
+
         }
-
-       
-
-      
-        
-
         private void button3_Click(object sender, EventArgs e)
         {
             String port_output  = COM_dialog();
@@ -409,10 +418,6 @@ namespace Spring_o_meter
                 label20.Text = Math.Round(Get_Position(),5).ToString()+" mm";
                 label22.Text = Math.Round(Get_Force(), 5).ToString()+" N";
 
-                //implement a stack that will continously read position data and plot it against time
-                //implement a force stack that will do the same but with force
-                //implement a spring constant stack that will do the same but with series measurements
-
             }
 
         }
@@ -440,6 +445,27 @@ namespace Spring_o_meter
             {
                 MessageBox.Show("STMERROR", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            Graph_K(chart2,"KC", data_trial_stack);
+            label25.Text = Math.Abs(Math.Round(sum/sample_count,3)).ToString();
+            double stand_div = standardDeviation(stack_k.ToArray());
+            label27.Text= Math.Round(stand_div,5).ToString();
+
+
+
+        }
+
+        private void chart2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label24_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
