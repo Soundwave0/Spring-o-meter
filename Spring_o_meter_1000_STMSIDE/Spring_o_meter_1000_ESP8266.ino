@@ -9,8 +9,8 @@ const int pinSCK = 14;//D5
 const int pinDT = 12;//D6
 //global variables for position encoder functionality
 const double impulses = 30;
-const double distance_per_rotation = 3.2;//change after measurement
-const double gear_ratio = 4;
+const double distance_per_rotation = 2;//change after measurement
+const double gear_ratio = 3;
 int encoderPosCount = 0;
 int pinALast;
 int aVal;
