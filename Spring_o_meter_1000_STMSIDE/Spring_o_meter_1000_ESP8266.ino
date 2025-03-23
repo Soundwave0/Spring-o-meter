@@ -1,5 +1,5 @@
 #include<HX711_ADC.h>
-
+#include <EEPROM.h>
 
 //global variables for postition encoder
 const int pinA = 5;// Connected to CLK on KY­040 D1
@@ -9,8 +9,8 @@ const int pinSCK = 14;//D5
 const int pinDT = 12;//D6
 //global variables for position encoder functionality
 const double impulses = 30;
-const double distance_per_rotation = 2;//change after measurement
-const double gear_ratio = 3;
+const double distance_per_rotation = 3.2;//change after measurement
+const double gear_ratio = 4;
 int encoderPosCount = 0;
 int pinALast;
 int aVal;
@@ -27,9 +27,17 @@ float weight_value = 0;
 const int samples = 10;//sampling during filtering and averaging for returning the signal
 //global varaibles for communication protocol
 String com_data;
-// function for position encoder reading
+// for the EEPROm part
+double calibrationmap = 1;   //Variable to store data read from EEPROM.
+int eepromAddress = 0; //adress in EEPROM to read and write 
+
 void encoder_position_reader();
 void com_functions();
+void writeDoubleToEEPROM(int address, double value);
+double readDoubleFromEEPROM(int address);
+void HX711_Loop();
+
+
 void setup() 
 {
 pinMode (pinA,INPUT);
@@ -42,15 +50,65 @@ delay(10);
 LoadCell.begin();
 LoadCell.start(stabilizingtime, _tare);
 LoadCell.setSamplesInUse(samples);
-//LoadCell.setReverseOutput(); //uncomment to turn a negative output value to positive
+// EEPROM calibration storage 
+EEPROM.begin(128); // will round horribly do not worry but fix this issue
+
 
 }
+
+
 void loop() 
 {
   com_functions();
   encoder_position_reader();
   HX711_Loop();
   
+}
+
+void HX711_Loop()
+{
+  LoadCell.update();
+  weight_value =  LoadCell.getData();
+
+}
+
+//Helper Functions
+
+void writeDoubleToEEPROM(int address, double value)
+ {
+  // Use a union to convert the double into bytes
+  union 
+  {
+    double val;
+    byte bytes[sizeof(double)];
+  } doubleToBytes;
+
+  doubleToBytes.val = value;
+
+  // Write each byte to EEPROM
+  for (int i = 0; i < sizeof(double); i++) 
+  {
+    EEPROM.write(address + i, doubleToBytes.bytes[i]);
+  }
+}
+
+// Function to read a double from EEPROM
+double readDoubleFromEEPROM(int address)
+ {
+  // Use a union to convert bytes back into a double
+  union 
+  {
+    double val;
+    byte bytes[sizeof(double)];
+  } bytesToDouble;
+
+  // Read each byte from EEPROM
+  for (int i = 0; i < sizeof(double); i++) 
+  {
+    bytesToDouble.bytes[i] = EEPROM.read(address + i);
+  }
+
+  return bytesToDouble.val;
 }
 void com_functions()
 {
@@ -89,16 +147,12 @@ void com_functions()
    
     else if(com_data == "IMP")
     {
-       String myString = String(encoderPosCount);
-      //Serial.println(plat_pos);
+      String myString = String(encoderPosCount);
       char* buf2 = (char*) malloc(sizeof(char)*myString.length()+1);
       myString.toCharArray(buf2, myString.length()+1);
       Serial.write(buf2);
       free(buf2);
       Serial.write('\n');
-      
-      
-      
     }
     else if(com_data == "RST")//resets the position on the encoder to 0
     {
@@ -107,10 +161,6 @@ void com_functions()
       Serial.write("SUC");
       Serial.write('\n');
     }
-    else if(com_data == "FST")//force rest to 0//basically the tare function
-    {
-      
-    }
     else if(com_data == "CALVAL")//pulls the calibration constant from the gui and sets it in the application part
     {
         Serial.write("CALRQS\n");//implement in c# part
@@ -118,7 +168,6 @@ void com_functions()
         String calibration_value_string = Serial.readStringUntil('\n');
         float calibration_value = calibration_value_string.toFloat();
         calibrationValue = calibration_value; 
-
     }
     else if(com_data == "TRE")//more accuarate slower tare //restarts the 
     {
@@ -143,15 +192,34 @@ void com_functions()
       myString.toCharArray(buf3, myString.length()+1);
       Serial.write(buf3);
       free(buf3);
+      Serial.write('\n');   
+    }
+    else if(com_data == "MPUL")//Micro-controller pulls data from application
+    {
+      //send request to application
+      Serial.write("MAPREQ");//send calibrationmap request to application
+      Serial.write('\n'); 
+      //receive value
+      String calibration_value_string = Serial.readStringUntil('\n');
+      calibrationmap = calibration_value_string.toDouble();
+      //write value to memory
+      writeDoubleToEEPROM(eepromAddress, calibrationmap);
+
+    }
+    else if(com_data == "APUL")//Application pulls data from microcontroller
+    {
+      double calmap = readDoubleFromEEPROM(eepromAddress);
+      String myString = String(calmap);
+      char* buf = (char*) malloc(sizeof(char)*myString.length()+1);
+      myString.toCharArray(buf, myString.length()+1);
+      Serial.write(buf);
+      free(buf);
       Serial.write('\n');
-      
     }
     else
     {
       Serial.write("ERR\n");
     }
-
-    
    }   
 }
 
@@ -179,23 +247,12 @@ if (digitalRead(pinB) != aVal)
   {
  
   }
-  //Serial.print("Encoder Position: ");
-  //Serial.println(encoderPosCount);
-  //Serial.println("Platform Position: ");
   plat_pos = distance_per_impulse*encoderPosCount;
-  //Serial.println(plat_pos);
+ 
   }
   pinALast = aVal;
 
 }
-
-void HX711_Loop()
-{
-  LoadCell.update();
-  weight_value =  LoadCell.getData();
-
-}
-
   
 
 
