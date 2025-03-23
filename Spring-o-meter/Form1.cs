@@ -63,7 +63,7 @@ namespace Spring_o_meter
         private Boolean kickpoint = false;
         private Boolean kickpoint_found = false;
         private double kickpoint_value = 0.15;
-
+        private double sigweight;
 
         /* PROTCOL GUIDE STM(System Transfer Mechanism)
          * ONN = turn on calibration, led turns on 
@@ -78,7 +78,8 @@ namespace Spring_o_meter
          * TREF = tares fast during measurement
          * ERR = value received when request is an error
          * CALVAL = change the calibration value in the esp program
-         * 
+         * APUL = application pulls from microcontroller eeprom
+         * MPUL = Microcontroller gets value from application
         */
 
 
@@ -94,10 +95,10 @@ namespace Spring_o_meter
                 serialPort1.WriteLine("WGH");
                 signal_test_weight_calibration = Convert.ToDouble(serialPort1.ReadLine());
                 double sigdif = signal_test_weight_calibration - signal_zero_state_calibration;
-                if (double.TryParse(textBox1.Text, out double testweight))//chekcs if is a double
+                if (double.TryParse(textBox1.Text, out double testweight))//checks if is a double
                 {
-                    double a = testweight / (sigdif);
-                    to_force_map = a * 9.806 / 1000;//now in newtons, gives newtons per sig unit
+                    double sigweight = testweight / (sigdif);
+                    to_force_map = sigweight * 9.806 / 1000;//now in newtons, gives newtons per sig unit
                     enter_Weight_Button.Text = "Calibrated";
                 }
                 else
@@ -110,15 +111,9 @@ namespace Spring_o_meter
         }
         void Graph_K(Chart chartx, String series_name,Stack<data_trial> stack)
         {
-            
             data_trial[] data_trial_array = stack.ToArray();
             SortedDictionary<double,double> keyValuePairs = new SortedDictionary<double,double>();
-            /*if (chartx.Series.Count != 0)
-            {
-                chartx.Series.Clear();
-                chartx.Series.Add(series_name);
-
-            }*/
+            
 
             for (int i =0; i < data_trial_array.Length;i++)
             {
@@ -261,8 +256,17 @@ namespace Spring_o_meter
             }
             return result;
         }
+        static double Mean(IEnumerable<double> sequence)
+        {
+            double result = 0;
 
-
+            if (sequence.Any())
+            {
+                double average = sequence.Average();
+                
+            }
+            return result;
+        }
 
         public Form1()
         {
@@ -315,13 +319,22 @@ namespace Spring_o_meter
             {
                 Force_Calibration();
                 calibrated = true;
-      
+                String response = Get_STM("MPUL");
+                if (response == "MAPREQ")
+                {
+                    String sigweight_string = sigweight.ToString();
+                    serialPort1.WriteLine(sigweight_string);
+
+                }
+
+
             }
             else if(calibration_Toggle.Text == "OFF")
             {
                 MessageBox.Show("Turn On calibration", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
-            
+           
+
         }
 
       
@@ -377,7 +390,7 @@ namespace Spring_o_meter
             {
                 spring_k = Math.Round(Math.Abs((current_data.Force - prev_data.Force) / (current_data.Pos - prev_data.Pos)), 3);
                 sum += spring_k;
-                mean_k = sum / sample_count-2;
+                mean_k = Mean(stack_k);
                 label17.Text = spring_k.ToString();
                 stack_k.Push(spring_k);
                 try
@@ -409,7 +422,8 @@ namespace Spring_o_meter
             if(Check_COM())
             {
                 button4.BackColor = Color.Green;
-                
+               
+
             }
             else button4.BackColor = Color.Red;
 
@@ -426,7 +440,7 @@ namespace Spring_o_meter
                 label22.Text = Math.Round(force, 5).ToString()+" N";
                 if(!kickpoint_found && kickpoint)
                 {
-                    if(force >=kickpoint_value)
+                    if(Math.Abs(force) >=kickpoint_value)
                     {
                         kickpoint_found = true;
                         label30.Text = Math.Round(position, 5).ToString() + " mm";
@@ -498,6 +512,32 @@ namespace Spring_o_meter
                 button8.BackColor = Color.Red;
                 kickpoint = false;
             }
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            stack_k.Clear();
+            sample_count = 0;
+            label12.Text = "0"; 
+            label13.Text = "0";
+            label14.Text = "0";
+            label15.Text = "0";
+            label25.Text = "NULL";
+            label30.Text = "NULL";
+            chart1.Series.Clear();
+            chart1.Series.Add("K");
+            chart2.Series.Clear();
+            chart2.Series.Add("KC");
+
+        }
+
+        private void button10_Click(object sender, EventArgs e)
+        {
+            calibrated = true;
+            String output = Get_STM("APUL");
+            to_force_map = Convert.ToDouble(output) * 9.806 / 1000;
+
+            
         }
     }
 }
