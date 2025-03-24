@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Text;
 using System.Linq;
@@ -42,15 +43,15 @@ namespace Spring_o_meter
             public double Pos { get; set; }
             public double Force { get; set; }
         }
-        data_trial current_data = new data_trial(0, 0);
-        data_trial prev_data = new data_trial(0, 0);
+        data_trial current_data = new data_trial();//made null just in case
+        data_trial prev_data = new data_trial();
         Stack<data_trial> data_trial_stack = new Stack<data_trial>();// will store the data in stack format
         private double spring_k = 0;
         private double mean_k = 0;
         private double sum = 0;
         // for position component
-        private const double GEAR_RATIO = 3;//netweem driver and gear
-        private const double DISTANCE_PER_ROTATION = 2; // distance in mm in distance per rotation
+        private const double GEAR_RATIO = 3;//between driver and gear
+        private const double DISTANCE_PER_ROTATION = 2; // distance in mm of distance per rotation
         private  const double IMPULSES_PER_ROTATION = 30;// impulses in the encoder
         //for the graph
         private const int k_stack_reading_depth = 5;// stack reading depth for graphing trials
@@ -64,6 +65,8 @@ namespace Spring_o_meter
         private Boolean kickpoint_found = false;
         private double kickpoint_value = 0.15;
         private double sigweight;
+        
+       
 
         /* PROTCOL GUIDE STM(System Transfer Mechanism)
          * ONN = turn on calibration, led turns on 
@@ -97,7 +100,7 @@ namespace Spring_o_meter
                 double sigdif = signal_test_weight_calibration - signal_zero_state_calibration;
                 if (double.TryParse(textBox1.Text, out double testweight))//checks if is a double
                 {
-                    double sigweight = testweight / (sigdif);
+                    sigweight = testweight / (sigdif);
                     to_force_map = sigweight * 9.806 / 1000;//now in newtons, gives newtons per sig unit
                     enter_Weight_Button.Text = "Calibrated";
                 }
@@ -111,6 +114,7 @@ namespace Spring_o_meter
         }
         void Graph_K(Chart chartx, String series_name,Stack<data_trial> stack)
         {
+
             data_trial[] data_trial_array = stack.ToArray();
             SortedDictionary<double,double> keyValuePairs = new SortedDictionary<double,double>();
             
@@ -317,15 +321,17 @@ namespace Spring_o_meter
         {
             if (calibration_Toggle.Text == "ON" )
             {
+                
                 Force_Calibration();
-                calibrated = true;
                 String response = Get_STM("MPUL");
                 if (response == "MAPREQ")
                 {
-                    String sigweight_string = sigweight.ToString();
-                    serialPort1.WriteLine(sigweight_string);
+                    String to_force_map_string = (to_force_map * 100000).ToString();
+                    serialPort1.WriteLine(to_force_map_string);
 
                 }
+                calibrated = true;
+               
 
 
             }
@@ -422,8 +428,6 @@ namespace Spring_o_meter
             if(Check_COM())
             {
                 button4.BackColor = Color.Green;
-               
-
             }
             else button4.BackColor = Color.Red;
 
@@ -480,7 +484,7 @@ namespace Spring_o_meter
         private void button7_Click(object sender, EventArgs e)
         {
             Graph_K(chart2,"KC", data_trial_stack);
-            label25.Text = Math.Abs(Math.Round(sum/sample_count,3)).ToString();
+            label25.Text = Math.Abs(Math.Round(sum/(sample_count-1),3)).ToString();
             double stand_div = standardDeviation(stack_k.ToArray());
             label27.Text= Math.Round(stand_div,5).ToString();
 
@@ -517,6 +521,8 @@ namespace Spring_o_meter
         private void button9_Click(object sender, EventArgs e)
         {
             stack_k.Clear();
+            data_trial_stack.Clear();//check this if it works
+            sum = 0;
             sample_count = 0;
             label12.Text = "0"; 
             label13.Text = "0";
@@ -533,11 +539,27 @@ namespace Spring_o_meter
 
         private void button10_Click(object sender, EventArgs e)
         {
-            calibrated = true;
-            String output = Get_STM("APUL");
-            to_force_map = Convert.ToDouble(output) * 9.806 / 1000;
-
             
+            
+            String output = Get_STM("APUL");
+            double output_normal = Convert.ToDouble(output)/10000000;
+            to_force_map = output_normal;
+            calibrated = true;
+
+
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+          
+            String response = Get_STM("MPUL");
+            if (response == "MAPREQ")
+            {
+                String to_force_map_string = (to_force_map*100000).ToString();
+                serialPort1.WriteLine(to_force_map_string);
+
+            }
+           
         }
     }
 }
