@@ -1,7 +1,7 @@
 #include<HX711_ADC.h>
 #include <EEPROM.h>
 
-//global variables for postition encoder
+//global variables for position encoder
 const int pinA = 5;// Connected to CLK on KY­040 D1
 const int pinB = 4; // Connected to DT on KY­040 D2
 //global variables for the force sensor
@@ -27,60 +27,49 @@ float weight_value = 0;
 const int samples = 10;//sampling during filtering and averaging for returning the signal
 //global varaibles for communication protocol
 String com_data;
-// for the EEPROm part
+// for the EEPROM 
 double calibrationmap10X5 = 1;   //Variable to store data read from EEPROM.
-int eepromAddress = 0; //adress in EEPROM to read and write 
-
-void encoder_position_reader();
-void com_functions();
-void HX711_Loop();
+int eepromAddress = 0; //address in EEPROM to read and write 
+int EEPROM_SIZE = 512;//EERPROM SIZE
+void encoder_position_reader();//function to read the position of the encoder
+void com_functions();//function for the communication protocol
+void HX711_Loop();//Function for force sensor loop
 
 
 void setup() 
 {
-pinMode (pinA,INPUT);
+pinMode (pinA,INPUT);//Defining pin modes
 pinMode (pinB,INPUT);
 pinMode(LED_BUILTIN, OUTPUT);
-
 pinALast = digitalRead(pinA);
-Serial.begin (9600);
+Serial.begin (9600);//Serial begin the Baud rate
 delay(10);
-LoadCell.begin();
+LoadCell.begin();//Starting the load cell
 LoadCell.start(stabilizingtime, _tare);
 LoadCell.setSamplesInUse(samples);
 // EEPROM calibration storage 
-
-EEPROM.begin(512); // will round horribly fix this error
+EEPROM.begin(EEPROM_SIZE); 
 }
-
-
 void loop() 
 {
-  com_functions();
-  encoder_position_reader();
-  HX711_Loop();
-  
+  com_functions();//Check for communication between application and ESP in serial and respond accordingly
+  encoder_position_reader();//Read encoder position
+  HX711_Loop();//Read Force
 }
-
 void HX711_Loop()
 {
   LoadCell.update();
   weight_value =  LoadCell.getData();
-
 }
-
 //Helper Functions
-
 void com_functions()
 {
     if(Serial.available())
    {
     com_data = Serial.readStringUntil('\n');
-    
     if(com_data=="ONN")
     {
       digitalWrite(LED_BUILTIN,LOW);
-       
     }
     else if(com_data == "OFF")
     {
@@ -103,9 +92,7 @@ void com_functions()
       Serial.write(buf1);
       free(buf1);
       Serial.write('\n');
-      
     }
-   
     else if(com_data == "IMP")
     {
       String myString = String(encoderPosCount);
@@ -113,8 +100,7 @@ void com_functions()
       myString.toCharArray(buf2, myString.length()+1);
       Serial.write(buf2);
       free(buf2);
-      Serial.write('\n');
-      
+      Serial.write('\n'); 
     }
     else if(com_data == "RST")//resets the position on the encoder to 0
     {
@@ -131,7 +117,7 @@ void com_functions()
         float calibration_value = calibration_value_string.toFloat();
         calibrationValue = calibration_value; 
     }
-    else if(com_data == "TRE")//more accuarate slower tare //restarts the 
+    else if(com_data == "TRE")//more accuarate slower tare 
     {
       LoadCell.tare();
       Serial.write("SUC\n");
@@ -156,7 +142,7 @@ void com_functions()
       free(buf3);
       Serial.write('\n');   
     }
-    else if(com_data == "MPUL")//Micro-controller pulls data from application
+    else if(com_data == "MPUL")//Micro-controller pulls data from application application data -> Micro-Controller
     {
       //send request to application
       Serial.write("MAPREQ");//send calibrationmap request to application
@@ -167,9 +153,8 @@ void com_functions()
       //write value to memory
       EEPROM.put(eepromAddress,calibrationmap10X5);
       EEPROM.commit();
-
     }
-    else if(com_data == "APUL")//Application pulls data from microcontroller
+    else if(com_data == "APUL")//Application pulls data from microcontroller Micro-controller -> Application
     {
       double calmap;//write to eeprom when power is on but when off will chnage vlaue to 16711680 (weird)
       EEPROM.get(eepromAddress,calmap);
@@ -186,8 +171,6 @@ void com_functions()
     }
    }   
 }
-
-
 void encoder_position_reader()
 { 
   aVal = digitalRead(pinA);
@@ -203,19 +186,11 @@ if (digitalRead(pinB) != aVal)
   bCW = false;
   encoderPosCount--;
   }
-  if (bCW)
-  {
- 
-  }
-  else
-  {
- 
-  }
+  if (bCW){}
+  else{}
   plat_pos = distance_per_impulse*encoderPosCount;
- 
   }
   pinALast = aVal;
-
 }
   
 
